@@ -13,39 +13,119 @@ load_dotenv()
 
 api_key = os.getenv("GROQ_API_KEY")
 
-st.set_page_config(page_title="AI Resume Analyzer", page_icon="📝", layout="wide")
+st.set_page_config(page_title="ResumeInsight: Smart Resume Evaluation System", layout="wide")
 
 st.markdown(
     """
     <style>
-    .stApp {
-        background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+    /* Light Mode Styles */
+    @media (prefers-color-scheme: light) {
+        .stApp {
+            background: linear-gradient(180deg, #001a33 0%, #7effc9 100%);
+        }
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #001a33 0%, #7effc9 100%);
+        }
+        h1, h2, h3, p, label {
+            color: #ffffff !important;
+        }
+        .report-card {
+            text-align: left;
+            background: rgba(0, 26, 51, 0.7);
+            color: #ffffff;
+            border: 1px solid #7effc9;
+            padding: 18px;
+            border-radius: 14px;
+            margin: 8px 0;
+            line-height: 1.7;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .report-card * {
+            color: #ffffff !important;
+        }
+        .stButton > button, .stDownloadButton > button, .stFileUploader button {
+            background-color: #2196F3 !important;
+            color: white !important;
+            border: 1px solid #1976D2 !important;
+            padding: 10px 20px !important;
+            border-radius: 6px !important;
+        }
+        .stButton > button *, .stDownloadButton > button *, .stFileUploader button * {
+            color: white !important;
+        }
+        .stButton > button:hover, .stDownloadButton > button:hover, .stFileUploader button:hover {
+            background-color: #1976D2 !important;
+            border: 1px solid #1565C0 !important;
+        }
     }
+    
+    /* Dark Mode Styles */
+    @media (prefers-color-scheme: dark) {
+        .stApp {
+            background: linear-gradient(180deg, #001a33 0%, #7effc9 100%);
+        }
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #001a33 0%, #7effc9 100%);
+        }
+        h1, h2, h3, p, label {
+            color: #ffffff !important;
+        }
+        .report-card {
+            text-align: left;
+            background: rgba(0, 26, 51, 0.7);
+            color: #ffffff;
+            border: 1px solid #7effc9;
+            padding: 18px;
+            border-radius: 14px;
+            margin: 8px 0;
+            line-height: 1.7;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .report-card * {
+            color: #ffffff !important;
+        }
+        .stButton > button, .stDownloadButton > button, .stFormSubmitButton > button, .stFileUploader button {
+            background-color: #2196F3 !important;
+            color: white !important;
+            border: 1px solid #1976D2 !important;
+            padding: 10px 20px !important;
+            border-radius: 6px !important;
+        }
+        .stButton > button *, .stDownloadButton > button *, .stFormSubmitButton > button *, .stFileUploader button * {
+            color: white !important;
+        }
+        .stButton > button:hover, .stDownloadButton > button:hover, .stFormSubmitButton > button:hover, .stFileUploader button:hover {
+            background-color: #1976D2 !important;
+            border: 1px solid #1565C0 !important;
+            color: white !important;
+        }
+        .stButton > button:hover *, .stDownloadButton > button:hover *, .stFormSubmitButton > button:hover *, .stFileUploader button:hover * {
+            color: white !important;
+        }
+        button {
+            color: white !important;
+        }
+        button * {
+            color: white !important;
+        }
+    }
+    
     .main .block-container {
         max-width: 980px;
         padding-top: 2rem;
         padding-bottom: 2rem;
     }
-    h1, h2, h3, p, label {
-        color: #0f172a !important;
+    .stButton > button, .stDownloadButton > button, .stFormSubmitButton > button, .stFileUploader button {
+        background-color: #2196F3 !important;
+        border-radius: 6px !important;
+        border: 1px solid #1976D2 !important;
+        color: white !important;
+        padding: 10px 20px !important;
     }
-    .report-card {
-        text-align: left;
-        background: #0b1220;
-        color: #f8fafc;
-        border: 1px solid #334155;
-        padding: 18px;
-        border-radius: 14px;
-        margin: 8px 0;
-        line-height: 1.7;
-        font-size: 1rem;
-    }
-    .report-card * {
-        color: #f8fafc !important;
-    }
-    .stButton > button, .stDownloadButton > button {
-        border-radius: 10px;
-        border: 1px solid #1d4ed8;
+    .stButton > button *, .stDownloadButton > button *, .stFormSubmitButton > button *, .stFileUploader button * {
+        color: white !important;
     }
     </style>
     """,
@@ -64,7 +144,7 @@ if "job_desc" not in st.session_state:
     st.session_state.job_desc=""
 
 
-st.title("AI Resume Analyzer")
+st.title("ResumeInsight: Smart Resume Evaluation System")
 
 
 
@@ -104,11 +184,7 @@ def get_report(resume,job_desc):
         - For each evaluation point, start the line with a score in this exact format: X/5
         - Example valid formats: 3/5, 4.5/5, 0/5
         - Do not use any other score format (no percentages, no /10 scale).
-        - Include one emoji after the score:
-            - ✅ if aligned
-            - ❌ if not aligned
-            - ⚠️ if evidence is unclear
-
+      
         What to evaluate:
         - Required technical skills
         - Relevant experience and responsibilities
