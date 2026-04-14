@@ -6,11 +6,51 @@ from groq import Groq
 import re                                        
 from dotenv import load_dotenv                    
 import os
+import html
 
 
 load_dotenv()
 
 api_key = os.getenv("GROQ_API_KEY")
+
+st.set_page_config(page_title="AI Resume Analyzer", page_icon="📝", layout="wide")
+
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+    .main .block-container {
+        max-width: 980px;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    h1, h2, h3, p, label {
+        color: #0f172a !important;
+    }
+    .report-card {
+        text-align: left;
+        background: #0b1220;
+        color: #f8fafc;
+        border: 1px solid #334155;
+        padding: 18px;
+        border-radius: 14px;
+        margin: 8px 0;
+        line-height: 1.7;
+        font-size: 1rem;
+    }
+    .report-card * {
+        color: #f8fafc !important;
+    }
+    .stButton > button, .stDownloadButton > button {
+        border-radius: 10px;
+        border: 1px solid #1d4ed8;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 
 #  Session States to store values 
@@ -140,8 +180,9 @@ if st.session_state.form_submitted:
 
     col1,col2 = st.columns(2,border=True)
     with col1:
-        st.write("Few ATS uses this score to shortlist candidates, Similarity Score:")
-        st.subheader(str(ats_score))
+        st.write("Few ATS systems use this score to shortlist candidates:")
+        st.metric("Similarity Score", f"{ats_score * 100:.1f}%")
+        st.caption(f"Raw cosine similarity: {ats_score:.3f}")
 
     # Call the function to get the Analysis Report from LLM 
     report = get_report(st.session_state.resume,st.session_state.job_desc)
@@ -153,17 +194,22 @@ if st.session_state.form_submitted:
 
     with col2:
         st.write("Total Average score according to our AI report:")
-        st.subheader(str(avg_score))
+        st.metric("AI Average Score", f"{avg_score * 100:.1f}%")
+        st.caption(f"Equivalent to {avg_score * 5:.2f}/5")
     score_place.success("Scores generated successfully!")
 
 
     st.subheader("AI Generated Analysis Report:")
 
-    st.markdown(f"""
-            <div style='text-align: left; background-color: #000000; padding: 10px; border-radius: 10px; margin: 5px 0;'>
-                {report}
-            </div>
-            """, unsafe_allow_html=True)
+    formatted_report = html.escape(report).replace("\n", "<br>")
+    st.markdown(
+        f"""
+        <div class='report-card'>
+            {formatted_report}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     
     st.download_button(
         label="Download Report",
