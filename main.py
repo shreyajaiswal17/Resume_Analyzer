@@ -28,9 +28,6 @@ st.title("AI Resume Analyzer 📝")
 
 
 
-
-
-# Function to extract text from PDF
 def extract_pdf_text(uploaded_file):
     try:
         extracted_text = extract_text(uploaded_file)
@@ -40,13 +37,14 @@ def extract_pdf_text(uploaded_file):
         return "Could not extract text from the PDF file."
 
 
-# Function to calculate similarity 
 def calculate_similarity_bert(text1, text2):
-    ats_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')      # Use BERT or SBERT or any model you want
+    ats_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')      # Use BERT or SBERT This loads a pretrained NLP model
+
     # Encode the texts directly to embeddings
     embeddings1 = ats_model.encode([text1])
     embeddings2 = ats_model.encode([text2])
-    
+
+    # Text → Vector → Compare
     # Calculate cosine similarity without adding an extra list layer
     similarity = cosine_similarity(embeddings1, embeddings2)[0][0]
     return similarity
@@ -56,26 +54,42 @@ def get_report(resume,job_desc):
     client = Groq(api_key=api_key)
 
     prompt=f"""
-    # Context:
-    - You are an AI Resume Analyzer, you will be given Candidate's resume and Job Description of the role he is applying for.
+        You are an AI Resume Analyzer.
 
-    # Instruction:
-    - Analyze candidate's resume based on the possible points that can be extracted from job description,and give your evaluation on each point with the criteria below:  
-    - Consider all points like required skills, experience,etc that are needed for the job role.
-    - Calculate the score to be given (out of 5) for every point based on evaluation at the beginning of each point with a detailed explanation.  
-    - If the resume aligns with the job description point, mark it with ✅ and provide a detailed explanation.  
-    - If the resume doesn't align with the job description point, mark it with ❌ and provide a reason for it.  
-    - If a clear conclusion cannot be made, use a ⚠️ sign with a reason.  
-    - The Final Heading should be "Suggestions to improve your resume:" and give where and what the candidate can improve to be selected for that job role.
+        Goal:
+        - Compare the candidate resume against the provided job description.
+        - Evaluate how well the candidate matches each major requirement.
 
-    # Inputs:
-    Candidate Resume: {resume}
-    ---
-    Job Description: {job_desc}
+        Scoring Rules (very important):
+        - For each evaluation point, start the line with a score in this exact format: X/5
+        - Example valid formats: 3/5, 4.5/5, 0/5
+        - Do not use any other score format (no percentages, no /10 scale).
+        - Include one emoji after the score:
+            - ✅ if aligned
+            - ❌ if not aligned
+            - ⚠️ if evidence is unclear
 
-    # Output:
-    - Each any every point should be given a score (example: 3/5 ). 
-    - Mention the scores and  relevant emoji at the beginning of each point and then explain the reason.
+        What to evaluate:
+        - Required technical skills
+        - Relevant experience and responsibilities
+        - Domain/industry fit
+        - Tools, certifications, and projects
+        - Communication/leadership hints if relevant to JD
+
+        Writing requirements:
+        - Give concise but specific reasoning for each point.
+        - Cite resume evidence when available.
+        - If a requirement is missing, clearly state what is missing.
+
+        Required section at the end:
+        - Add a final heading exactly as:
+            Suggestions to improve your resume:
+        - Under this heading, provide practical, prioritized improvements.
+
+        Inputs:
+        Candidate Resume: {resume}
+        ---
+        Job Description: {job_desc}
     """
 
     chat_completion = client.chat.completions.create(
@@ -89,7 +103,7 @@ def extract_scores(text):
     pattern = r'(\d+(?:\.\d+)?)/5'
     # Find all matches in the text
     matches = re.findall(pattern, text)
-    # Convert matches to floats
+    
     scores = [float(match) for match in matches]
     return scores
 
