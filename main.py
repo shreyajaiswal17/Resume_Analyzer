@@ -64,7 +64,7 @@ if "job_desc" not in st.session_state:
     st.session_state.job_desc=""
 
 
-st.title("AI Resume Analyzer 📝")
+st.title("AI Resume Analyzer")
 
 
 
