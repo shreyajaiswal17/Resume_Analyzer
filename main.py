@@ -1,17 +1,15 @@
-import streamlit as st                            # For Web Interface (Front-End)
-from pdfminer.high_level import extract_text      # To Extract Text from Resume PDF
-from sentence_transformers import SentenceTransformer      # To generate Embeddings of text
-from sklearn.metrics.pairwise import cosine_similarity     # To get Similarity Score of Resume and Job Description
-from groq import Groq                             # API to use LLM's
-import re                                         # To perform Regular Expression Functions
-from dotenv import load_dotenv                    # Loading API Key from .env file
+import streamlit as st                            
+from pdfminer.high_level import extract_text      
+from sentence_transformers import SentenceTransformer      
+from sklearn.metrics.pairwise import cosine_similarity     
+from groq import Groq                             
+import re                                        
+from dotenv import load_dotenv                    
 import os
 
 
-# Load environment variables from .env
 load_dotenv()
 
-# Fetch the key from the environment
 api_key = os.getenv("GROQ_API_KEY")
 
 
@@ -26,13 +24,11 @@ if "job_desc" not in st.session_state:
     st.session_state.job_desc=""
 
 
-
-# Title of the Project, change according to your style
 st.title("AI Resume Analyzer 📝")
 
 
 
-# <------- Defining Functions ------->
+
 
 # Function to extract text from PDF
 def extract_pdf_text(uploaded_file):
@@ -59,7 +55,6 @@ def calculate_similarity_bert(text1, text2):
 def get_report(resume,job_desc):
     client = Groq(api_key=api_key)
 
-    # Change the prompt to get the results in your style
     prompt=f"""
     # Context:
     - You are an AI Resume Analyzer, you will be given Candidate's resume and Job Description of the role he is applying for.
@@ -101,32 +96,25 @@ def extract_scores(text):
 
 
 
-# <--------- Starting the Work Flow ---------> 
 
-# Displays Form only if the form is not submitted
 if not st.session_state.form_submitted:
     with st.form("my_form"):
 
-        # Taking input a Resume (PDF) file 
         resume_file = st.file_uploader(label="Upload your Resume/CV in PDF format", type="pdf")
 
-        # Taking input Job Description
         st.session_state.job_desc = st.text_area("Enter the Job Description of the role you are applying for:",placeholder="Job Description...")
 
-        # Form Submission Button
+     
         submitted = st.form_submit_button("Analyze")
         if submitted:
-
-            #  Allow only if Both Resume and Job Description are Submitted
             if st.session_state.job_desc and resume_file:
                 st.info("Extracting Information")
 
-                st.session_state.resume = extract_pdf_text(resume_file)      # Calling the function to extract text from Resume
+                st.session_state.resume = extract_pdf_text(resume_file)     
 
                 st.session_state.form_submitted = True
-                st.rerun()                 # Refresh the page to close the form and give results
+                st.rerun()               
 
-            # Donot allow if not uploaded
             else:
                 st.warning("Please Upload both Resume and Job Description to analyze")
 
@@ -134,7 +122,6 @@ if not st.session_state.form_submitted:
 if st.session_state.form_submitted:
     score_place = st.info("Generating Scores...")
 
-    # Call the function to get ATS Score
     ats_score = calculate_similarity_bert(st.session_state.resume,st.session_state.job_desc)
 
     col1,col2 = st.columns(2,border=True)
@@ -142,12 +129,12 @@ if st.session_state.form_submitted:
         st.write("Few ATS uses this score to shortlist candidates, Similarity Score:")
         st.subheader(str(ats_score))
 
-    # Call the function to get the Analysis Report from LLM (Groq)
+    # Call the function to get the Analysis Report from LLM 
     report = get_report(st.session_state.resume,st.session_state.job_desc)
 
-    # Calculate the Average Score from the LLM Report
-    report_scores = extract_scores(report)                 # Example : [3/5, 4/5, 5/5,...]
-    avg_score = sum(report_scores) / (5*len(report_scores))  # Example: 2.4
+    # Calculate the Average Score 
+    report_scores = extract_scores(report)                 
+    avg_score = sum(report_scores) / (5*len(report_scores)) 
 
 
     with col2:
@@ -158,14 +145,12 @@ if st.session_state.form_submitted:
 
     st.subheader("AI Generated Analysis Report:")
 
-    # Displaying Report 
     st.markdown(f"""
             <div style='text-align: left; background-color: #000000; padding: 10px; border-radius: 10px; margin: 5px 0;'>
                 {report}
             </div>
             """, unsafe_allow_html=True)
     
-    # Download Button
     st.download_button(
         label="Download Report",
         data=report,
@@ -174,4 +159,3 @@ if st.session_state.form_submitted:
         )
     
 
-# <-------------- End of the Work Flow --------------->
