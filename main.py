@@ -13,7 +13,7 @@ load_dotenv()
 
 api_key = os.getenv("GROQ_API_KEY")
 
-st.set_page_config(page_title="ResumeInsight: Smart Resume Evaluation System", layout="wide")
+st.set_page_config(page_title="SkillMatcher", layout="wide")
 
 st.markdown(
     """
@@ -144,7 +144,7 @@ if "job_desc" not in st.session_state:
     st.session_state.job_desc=""
 
 
-st.title("ResumeInsight: Smart Resume Evaluation System")
+st.title("SkillMatcher")
 
 
 
